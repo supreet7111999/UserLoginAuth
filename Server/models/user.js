@@ -9,16 +9,17 @@ const userSchema=mongoose.Schema({
         required:true,
     },
     phone:{
-        type:Number,
+        type:String,
         required:true,
         min:10
     },
-    password:{
+    password: { type: String, required: true, trim: true },
+    accessToken:{
         type:String,
-       required:true
+        // required:true
     }
 })
 
-const User=mongoose.model("User",userSchema);
+const UserModel=mongoose.model("user",userSchema);
 
-module.exports=User;
+module.exports=UserModel;
