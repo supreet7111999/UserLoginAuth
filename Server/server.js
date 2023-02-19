@@ -39,8 +39,6 @@ app.get("/",(_,res)=>{
 app.post("/register",async (req,res)=>{
      try{
         console.log(req.body);
-        // if(!name || !)
-        // const {name,email,phone,password}=req.body;
         let name=req.body.name;
         let email=req.body.email;
         let phone=req.body.name;
@@ -65,10 +63,7 @@ app.post("/register",async (req,res)=>{
         else{
         let encphone=encrypt(phone);
         encphone=encphone.encryptedData;
-        // console.log(encname);
-        // console.log(encemail);
-        // console.log(encphone);
-        const salt = await bcrypt.genSalt(10)
+        const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt);
         const doc = new UserModel({
             email: encemail,
@@ -77,7 +72,6 @@ app.post("/register",async (req,res)=>{
             password: hashPassword,
             accessToken:""
           })
-        // console.log(hashPassword);  
         const x=await doc.save();
         console.log(x);
         res.status(201).send({"status":"success","message":"Registration Success"});
@@ -88,13 +82,77 @@ app.post("/register",async (req,res)=>{
      }
 })
 app.post("/login",async (req,res)=>{
-
+    let email=req.body.email;
+    let password=req.body.password;
+    console.log(email);
+    console.log(password);
+    if(email==null || password==null)
+    {
+        res.send({"status":"error","message":"Please fill all details"});
+        return ;
+    }
+    else{
+        let encemail=encrypt(email);
+        encemail=encemail.encryptedData;
+        console.log(encemail);
+        let user=await UserModel.findOne({email:encemail});
+        if(user!=null)
+        {
+         const isMatch = await bcrypt.compare(password, user.password);
+         if(!isMatch)
+         {
+            res.send({"status":"error","message":"Invalid Details"});
+         }
+         else{
+            res.send({"status":"success","message":"Success Login"});
+         }
+        }
+        else{
+            res.send({"status":"error","message":"Invalid Details"});
+        }
+    }
 })
-app.post("/update",(req,res)=>{
-
+app.post("/update",async (req,res)=>{
+   const {email,phone,name,password}=req.body;
+   if(!phone||!name)
+   {
+    res.send({"status":"error","message":"Enter all fields"});
+    return ;
+   }
+   let encphone=encrypt(phone);
+   let encname=encrypt(name);
+   //logic to check for the email
+   encname=encname.encryptedData;
+   encphone=encphone.encryptedData;
 })
-app.post("/changepass",(req,res)=>{
+app.post("/changepass",async (req,res)=>{
+    const {oldPass,newPass}=req.body;
 
+    if(!oldPass||!newPass)
+    {
+        res.send({"status":"error","message":"Enter all fields"});
+        return ;
+    }
+    let email=req.body.email;
+    let encemail=encrypt(email);
+    encemail=encemail.encryptedData;
+    // let user=await UserModel.findOne({'email':encemail});
+    let user=await UserModel.findOne({'email':'d3b94050bed3a16f22ef93e288965ea6'});
+    if(user==null)
+    {
+        res.send({"status":"error","message":"Not a valid user"});
+        return;
+    }
+    const isMatch = await bcrypt.compare(oldPass, user.password);
+    if(isMatch)
+    {
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(newPass,salt);
+        res.send({"status":"success","message":"password changed"});
+    }
+    else{
+        res.send({"status":"error","message":"old password not matched"});
+    }
 })
 app.listen(port,()=>{
     console.log(`server is running ${port}`);
