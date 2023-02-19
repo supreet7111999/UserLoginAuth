@@ -13,11 +13,7 @@ const userSchema=mongoose.Schema({
         required:true,
         min:10
     },
-    password: { type: String, required: true, trim: true },
-    accessToken:{
-        type:String,
-        // required:true
-    }
+    password: { type: String, required: true, trim: true }
 })
 
 const UserModel=mongoose.model("user",userSchema);

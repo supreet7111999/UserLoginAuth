@@ -4,8 +4,9 @@ const crypto=require("crypto");
 const port=process.env.PORT||3000;
 const UserModel=require("./models/user");
 const bcrypt=require("bcrypt");
+const jwt=require("jsonwebtoken");
 const app=express();
-
+const jwtSecret="jwtsecret12345678";
 const algorithm = 'aes-256-cbc';
  
 const key = crypto.randomBytes(32);
@@ -33,6 +34,7 @@ function decrypt(text) {
 
 
 app.use(express.json());
+
 app.get("/",(_,res)=>{
     res.send("Welcome");
 })
@@ -104,7 +106,8 @@ app.post("/login",async (req,res)=>{
             res.send({"status":"error","message":"Invalid Details"});
          }
          else{
-            res.send({"status":"success","message":"Success Login"});
+            const token = jwt.sign({ userID: user._id.toString() },jwtSecret, { expiresIn: '5d' });
+            res.status(201).send({ "status": "success", "message": "Login Success", "token": token });
          }
         }
         else{
@@ -113,17 +116,36 @@ app.post("/login",async (req,res)=>{
     }
 })
 app.post("/update",async (req,res)=>{
-   const {email,phone,name,password}=req.body;
-   if(!phone||!name)
-   {
-    res.send({"status":"error","message":"Enter all fields"});
-    return ;
+   const email=req.body.email;
+   const name=req.body.name;
+   const phone=req.body.phone;
+   console.log("1");
+   try{
+    // console.log("2");
+    if(!phone||!name)
+    {
+     res.send({"status":"error","message":"Enter all fields"});
+     return ;
+    }
+    // console.log(phone);
+    let encemail=encrypt(email);
+    let encphone=encrypt(phone);
+    let encname=encrypt(name);
+    //logic to check for the email
+    // console.log(encemail," ",encname," ",encname);
+    encemail=encemail.encryptedData;
+    encname=encname.encryptedData;
+    encphone=encphone.encryptedData;
+    console.log("bj");
+    console.log(encemail);
+    await UserModel.findOneAndUpdate({'email':encemail},{$set:{'name':encname,'phone':encphone}});
+    res.send({'status':'success','message':"updated"});
    }
-   let encphone=encrypt(phone);
-   let encname=encrypt(name);
-   //logic to check for the email
-   encname=encname.encryptedData;
-   encphone=encphone.encryptedData;
+   catch(err)
+   {
+     res.send({'status':'error','message':'Something error'});
+   }
+
 })
 app.post("/changepass",async (req,res)=>{
     const {oldPass,newPass}=req.body;
@@ -136,8 +158,8 @@ app.post("/changepass",async (req,res)=>{
     let email=req.body.email;
     let encemail=encrypt(email);
     encemail=encemail.encryptedData;
-    // let user=await UserModel.findOne({'email':encemail});
-    let user=await UserModel.findOne({'email':'d3b94050bed3a16f22ef93e288965ea6'});
+    let user=await UserModel.findOne({'email':encemail});
+    // let user=await UserModel.findOne({'email':'d3b94050bed3a16f22ef93e288965ea6'});
     if(user==null)
     {
         res.send({"status":"error","message":"Not a valid user"});
