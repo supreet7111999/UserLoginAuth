@@ -35,7 +35,7 @@ function decrypt(text) {
 
 app.use(express.json());
 
-app.get("/",(_,res)=>{
+app.get("*",(_,res)=>{
     res.send("Welcome");
 })
 app.post("/register",async (req,res)=>{
@@ -121,18 +121,14 @@ app.post("/update",async (req,res)=>{
    const phone=req.body.phone;
    console.log("1");
    try{
-    // console.log("2");
     if(!phone||!name)
     {
      res.send({"status":"error","message":"Enter all fields"});
      return ;
     }
-    // console.log(phone);
     let encemail=encrypt(email);
     let encphone=encrypt(phone);
     let encname=encrypt(name);
-    //logic to check for the email
-    // console.log(encemail," ",encname," ",encname);
     encemail=encemail.encryptedData;
     encname=encname.encryptedData;
     encphone=encphone.encryptedData;
