@@ -72,7 +72,6 @@ app.post("/register",async (req,res)=>{
             name: encname,
             phone:encphone,
             password: hashPassword,
-            accessToken:""
           })
         const x=await doc.save();
         console.log(x);
@@ -106,8 +105,11 @@ app.post("/login",async (req,res)=>{
             res.send({"status":"error","message":"Invalid Details"});
          }
          else{
+            const name=decrypt(user.name);
+            const phone=decrypt(user.phone);
+            console.log(phone);
             const token = jwt.sign({ userID: user._id.toString() },jwtSecret, { expiresIn: '5d' });
-            res.status(201).send({ "status": "success", "message": "Login Success", "token": token });
+            res.status(201).send({ "status": "success", "message": "Login Success", "token": token ,"name":name,"phone":phone});
          }
         }
         else{
